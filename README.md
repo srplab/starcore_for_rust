@@ -70,42 +70,25 @@ Example:
 --------
 
 ```rust
-package main
+#![allow(unused_variables)]
+#![allow(non_snake_case)]
+#![allow(unused_imports)]
+#![allow(dead_code)]
 
-import "fmt"
-import "github.com/srplab/starcore_for_go/stargo"
+extern crate starcore_for_rust;
+use starcore_for_rust::*;
 
-func main() {
-	Service := stargo.InitSimple("test", "123", 0, 0)
-	SrvGroup := Service.Get("_ServiceGroup").(*stargo.StarSrvGroup)
-	Service.CheckPassword(false)
+fn main() {
+	let Service = starrust::InitSimple(&"test",&"123", 0, 0,&[]);
+	let SrvGroup = Service.Get(&"_ServiceGroup").ToSrvGroup();
+        
+    let initResult = SrvGroup.InitRaw(&"python36", &Service);
+    let python = Service.ImportRawContext(&"python", &"", false, &"");
 
-	SrvGroup.InitRaw("python36", Service)
-	python := Service.ImportRawContext("python", "", false, "")
-
-	python.Call("import", "tensorflow")
-	tf := python.GetObject("tensorflow")
-
-	a := tf.Call("constant", 5, map[string]interface{}{"name": "input_a"})
-	b := tf.Call("constant", 3, map[string]interface{}{"name": "input_b"})
-
-	fmt.Println(a)
-	fmt.Println(b)
-
-	c := tf.Call("multiply", a, b, map[string]interface{}{"name": "mul_c"})
-	d := tf.Call("add", a, b, map[string]interface{}{"name": "add_d"})
-
-	fmt.Println(c)
-	fmt.Println(d)
-
-	e := tf.Call("add", c, d, map[string]interface{}{"name": "add_e"})
-	fmt.Println(e)
-
-	sess := tf.CallObject("Session")
-	fmt.Println(sess)
-
-	r := sess.Call("run", e)
-	fmt.Println(r)
+	python.Call(&"import", &[&"sys"]);
+	let python_sys = python.GetObject(&"sys");
+	let python_python = python_sys.GetObject(&"path");
+	println!("{}",python_python.ToString());
 }
 ```
 
@@ -114,27 +97,24 @@ Capture output from other scripts:
 
 Register CallBack function, as follow
 
-```go
-package main
+```rust
+extern crate starcore_for_rust;
+use starcore_for_rust::*;
+use std::any::Any;
 
-import "fmt"
-import "github.com/srplab/starcore_for_go/stargo"
-
-func MsgCallBack(ServiceGroupID uint32, uMsg uint32, wParam interface{}, lParam interface{}) (IsProcessed bool, Result interface{}) {
-	if uMsg == stargo.MSG_VSDISPMSG || uMsg == stargo.MSG_VSDISPLUAMSG || uMsg == stargo.MSG_DISPMSG || uMsg == stargo.MSG_DISPLUAMSG {
-		fmt.Println(wParam)
+fn MsgCallBack(ServiceGroupID: u32, uMsg: u32, wParam: &Any, lParam: &Any) -> (bool, Box<Any>)
+{
+	if uMsg == MSG_VSDISPMSG || uMsg == MSG_VSDISPLUAMSG || uMsg == MSG_DISPMSG || uMsg == MSG_DISPLUAMSG {
+		println!("{}",starrust::ToString(wParam));
 	} else {
-		fmt.Println(ServiceGroupID, uMsg, wParam, lParam)
 	}
-	return false, 0
+	return (false, Box::new(&0));
 }
 
-func main() {
-	Service := stargo.InitSimple("test", "123", 0, 0)
-	SrvGroup := Service.Get("_ServiceGroup").(*stargo.StarSrvGroup)
-	Service.CheckPassword(false)
-
-	stargo.RegMsgCallBack_P(MsgCallBack)
+fn main() {
+	let Service = starrust::InitSimple(&"test",&"123", 0, 0,&[]);
+    starrust::RegMsgCallBack_P(MsgCallBack);
+	let SrvGroup = Service.Get(&"_ServiceGroup").ToSrvGroup();
 
     ...
 }
@@ -143,63 +123,49 @@ func main() {
 Develop extension modules:
 --------
 
-Set the callback function in the initialization function
+- Create and export "StarCoreService_Init2" and "StarCoreService_Term2" function, as follow,
 
-- Call "RegScriptInitCallBack_P" to register the function which will be called when the module is loaded.
-- Call "RegAttachRawContextCallBack_P" to register function which will be called when other scripts call AttachRawContext function of cle.
-- Call "RegScriptTermCallBack_P" to register the function which will be called when the module is unloaded.
+```rust
+#[no_mangle]
+pub extern "C" fn StarCoreService_Init2(StarCore:*const c_void, InterfaceTable:*const c_void ) -> i8
+{
+    starrust::println(format!("{}","StarCoreService_Init2"));
+    let res = starrust::Stub_StarCoreService_Init2(StarCore,InterfaceTable);
+    starrust::println(format!("{}",res));
+    return res;
+}
+    
+#[no_mangle]
+pub extern "C" fn StarCoreService_Term2(StarCore:*const c_void, InterfaceTable:*const c_void )
+{
+    starrust::println(format!("{}","StarCoreService_Term2"));
+    starrust::Stub_StarCoreService_Term2(StarCore,InterfaceTable);
+}
+```
 
-```go
-func init() {
-	stargo.RegAttachRawContextCallBack_P(func(ContextName string) interface{} {
-		if ContextName == "gofunc" {
-			return func(v1 string, v2 float32) string {
-				stargo.Println(v1)
-				stargo.Println(v2)
-				return "hello fro go"
-			}
-		}
-		return nil
-	})
+- Create and export "ScriptInitCallBack" and "ScriptTermCallBack" function. In ScriptInitCallBack, create cle objects which will be output to other scripts
 
-	stargo.RegScriptTermCallBack_P(func() {
-		stargo.Println("go script engine exit...")
-	})
+```rust
+fn rustcallback(CleGroup:&STARSRVGROUP,CleService:&STARSERVICE,CleObject:&starrust::STAROBJECT,Paras: &[starrust::STARRESULT]) -> starrust::STARRESULT {
+    starrust::println(format!("{}",Paras[0].ToString()));
+    starrust::println(format!("{}",Paras[1].ToInt()));
+	return Some(Box::new(CleGroup.NewParaPkg(&[&"return from go", &345.4])));
+}
+#[no_mangle]
+pub extern "C" fn ScriptTermCallBack() {}
+#[no_mangle]
+pub extern "C" fn ScriptInitCallBack(SrvGroup: &STARSRVGROUP, Service: &STARSERVICE) {
+    starrust::println(format!("{}",SrvGroup.ToString()));
+    starrust::println(format!("{}",Service.ToString()));
 
-	stargo.RegScriptInitCallBack_P(func(SrvGroup *stargo.StarSrvGroup, Service *stargo.StarService) {
-		stargo.Println("go script engine init...")
-
-		/*--GoObject can be called from other script */
-		s := Service.New("GoObject")
-		s.RegScriptProc_P("PrintHello", func(CleGroup *stargo.StarSrvGroup, CleService *stargo.StarService, CleObject *stargo.StarObject, Paras []interface{}) interface{} {
-			stargo.Println(Paras)
-			return []interface{}{"return from go", 345.4}
-		})
-	})
+	let s = Service.New(&[&"RustObject"]);
+	s.RegScriptProc_P(&"PrintHello", rustcallback);    
 }
 ```
 
 ### Build to share library
 
-- Linux
-
-```sh
- $ go build -buildmode=c-shared -o star_go.so
-```
-
-- Windows
-
-```sh
- $ go build -buildmode=c-shared -o star_go.so
-```
-
-- Android
-
-```sh
- $ gomobile build -target=android/arm
-
- And the extract libgo_.so from the .apk package
-```
+See above
 
 
 ### Use the share library, 
@@ -209,7 +175,7 @@ example on android
 
 
 ```java
-package com.example.srplab.testgo;
+package com.example.srplab.testrust;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -223,6 +189,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        try{
+            System.load(this.getApplicationInfo().nativeLibraryDir+"/libteststargo.so");
+        }
+        catch(UnsatisfiedLinkError ex)
+        {
+            System.out.println(ex.toString());
+        }
+
         /*----init starcore----*/
         StarCoreFactoryPath.StarCoreCoreLibraryPath = this.getApplicationInfo().nativeLibraryDir;
         StarCoreFactoryPath.StarCoreShareLibraryPath = this.getApplicationInfo().nativeLibraryDir;
@@ -231,26 +205,26 @@ public class MainActivity extends AppCompatActivity {
         final StarCoreFactory starcore= StarCoreFactory.GetFactory();
         StarServiceClass Service=starcore._InitSimple("test","123",0,0);
         starcore._RegMsgCallBack_P(new StarMsgCallBackInterface() {
-            public Object Invoke(int ServiceGroupID, int uMes, Object wParam, Object lParam) {
-                if (uMes == starcore._GetInt("MSG_VSDISPMSG") || uMes == starcore._GetInt("MSG_VSDISPLUAMSG")) {
-                    System.out.println((String) wParam);
-                }
-                if (uMes == starcore._GetInt("MSG_DISPMSG") || uMes == starcore._GetInt("MSG_DISPLUAMSG")) {
-                    System.out.println("++++++++++++++++" + (String) wParam);
-                }
-                return null;
-            }
-        });
+                                       public Object Invoke(int ServiceGroupID, int uMes, Object wParam, Object lParam) {
+                                           if (uMes == starcore._GetInt("MSG_VSDISPMSG") || uMes == starcore._GetInt("MSG_VSDISPLUAMSG")) {
+                                               System.out.println((String) wParam);
+                                           }
+                                           if (uMes == starcore._GetInt("MSG_DISPMSG") || uMes == starcore._GetInt("MSG_DISPLUAMSG")) {
+                                               System.out.println("++++++++++++++++" + (String) wParam);
+                                           }
+                                           return null;
+                                       }
+                                   });
         StarSrvGroupClass SrvGroup = (StarSrvGroupClass)Service._Get("_ServiceGroup");
         Service._CheckPassword(false);
 
-        Object[] result = Service._DoFile("",this.getApplicationInfo().nativeLibraryDir+"/libgo_.so","");
+        Object[] result = Service._DoFile("",this.getApplicationInfo().nativeLibraryDir+"/libteststargo.so","");
         System.out.println(result);
 
-        System.out.println(Service._Get("GoObject"));
-        StarObjectClass GoObject = (StarObjectClass)Service._GetObject("GoObject");
-        System.out.println(GoObject);
-        System.out.println(GoObject._Call("PrintHello","------------1",234.56));
+        System.out.println(Service._Get("RustObject"));
+        StarObjectClass RustObject = (StarObjectClass)Service._GetObject("RustObject");
+        System.out.println(RustObject);
+        System.out.println(RustObject._Call("PrintHello","------------1",234.56));
     }
 }
 ```
