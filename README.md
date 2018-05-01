@@ -56,6 +56,9 @@ starcore_for_rust = {git="https://github.com/srplab/starcore_for_rust",features 
 And then,
 
 ```sh
+$ rustup target add arm-linux-androideabi
+# Create toolchain
+$ /home/xxx/Android/android-ndk-r12b/build/tools/make-standalone-toolchain.sh --platform=android-18 --toolchain=arm-linux-androideabi-4.9 --install-dir=android-18-toolchain --ndk-dir=/home/lihm/Android/android-ndk-r12b / --arch=arm
 # Create the .cargo/config file
 $ mkdir -p .cargo
 $ echo '[build]
