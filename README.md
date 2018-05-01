@@ -149,7 +149,7 @@ pub extern "C" fn StarCoreService_Term2(StarCore:*const c_void, InterfaceTable:*
 fn rustcallback(CleGroup:&STARSRVGROUP,CleService:&STARSERVICE,CleObject:&starrust::STAROBJECT,Paras: &[starrust::STARRESULT]) -> starrust::STARRESULT {
     starrust::println(format!("{}",Paras[0].ToString()));
     starrust::println(format!("{}",Paras[1].ToInt()));
-	return Some(Box::new(CleGroup.NewParaPkg(&[&"return from go", &345.4])));
+	return Some(Box::new(CleGroup.NewParaPkg(&[&"return from rust", &345.4])));
 }
 #[no_mangle]
 pub extern "C" fn ScriptTermCallBack() {}
@@ -189,14 +189,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try{
-            System.load(this.getApplicationInfo().nativeLibraryDir+"/libteststargo.so");
-        }
-        catch(UnsatisfiedLinkError ex)
-        {
-            System.out.println(ex.toString());
-        }
-
         /*----init starcore----*/
         StarCoreFactoryPath.StarCoreCoreLibraryPath = this.getApplicationInfo().nativeLibraryDir;
         StarCoreFactoryPath.StarCoreShareLibraryPath = this.getApplicationInfo().nativeLibraryDir;
@@ -218,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
         StarSrvGroupClass SrvGroup = (StarSrvGroupClass)Service._Get("_ServiceGroup");
         Service._CheckPassword(false);
 
-        Object[] result = Service._DoFile("",this.getApplicationInfo().nativeLibraryDir+"/libteststargo.so","");
+        Object[] result = Service._DoFile("",this.getApplicationInfo().nativeLibraryDir+"/libteststarrust.so","");
         System.out.println(result);
 
         System.out.println(Service._Get("RustObject"));
