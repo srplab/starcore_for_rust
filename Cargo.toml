@@ -1,0 +1,16 @@
+[package]
+name = "starcore_for_rust"
+version = "0.1.0"
+authors = ["srplab"]
+build="build.rs"
+
+[dependencies]
+
+[features]
+star-sharelib = []
+
+##build for android
+android_arm = []
+android_x86 = []
+android_x86_64 = []
+android_arm64 = []
