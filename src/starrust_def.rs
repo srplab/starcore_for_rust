@@ -87,7 +87,7 @@ macro_rules! star_binbuf {
 macro_rules! star_fn {
     ($Obj:ident,$name:expr,$CleGroup:ident,$CleService:ident,$CleObject:ident,$($var:ident : $ptype:ty),* $body:block ) => {
         {
-        fn rustcallback($CleGroup:&starrust::STARSRVGROUP,CleService:&starrust::STARSERVICE,CleObject:&starrust::STAROBJECT,Paras: &[starrust::STARRESULT]) -> starrust::STARRESULT {
+        fn rustcallback($CleGroup:&starrust::STARSRVGROUP,$CleService:&starrust::STARSERVICE,$CleObject:&starrust::STAROBJECT,Paras: &[starrust::STARRESULT]) -> starrust::STARRESULT {
             //$(let $var = star_fn_argparse![Paras[0],stringify!($ptype)];)* 
             let mut Paras_Index : isize = -1; 
             $( let $var : $ptype;
