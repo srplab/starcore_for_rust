@@ -5,6 +5,69 @@ The library is written in rust language, which supports rust language to call ot
 
 It supports android, windows and linux platforms
 
+Change at 2018/05/18
+--------
+
+Add macro definition, simplify object function definition and other operations
+
+
+```
+let para = star_parapkg!(StarSrvGroup,1,2,3);
+let para = star_binbuf!(StarSrvGroup);
+
+star_fn!(CallBackObj,"PrintHello",CleGroup,CleService,CleObject,a:String, b:i32 {
+    });
+
+star_ret!(star_parapkg!(CleGroup,"return from go",345.4));
+
+let retobj = star_call!(python,"tt","hello ","world");
+let retobj = star_callbool!(python,"tt","hello ","world");
+let retobj = star_callint!(python,"tt","hello ","world");
+let retobj = star_callint64!(python,"tt","hello ","world");
+let retobj = star_callstring!(python,"tt","hello ","world");
+let retobj = star_calldouble!(python,"tt","hello ","world");
+let retobj = star_callobject!(python,"tt","hello ","world");
+let retobj = star_callparapkg!(python,"tt","hello ","world");
+let retobj = star_callbinbuf!(python,"tt","hello ","world");
+let retobj = star_get!(python,"tt");
+let retobj = star_getbool!(python,"tt");
+let retobj = star_getint!(python,"tt");
+let retobj = star_getint64!(python,"tt");
+let retobj = star_getstring!(python,"tt");
+let retobj = star_getdouble!(python,"tt");
+let retobj = star_getobject!(python,"tt");
+let retobj = star_getparapkg!(python,"tt");
+let retobj = star_getbinbuf!(python,"tt");
+let retobj = star_set!(python,"g1",456);
+let retobj = parapkg_get!(para,0);
+let retobj = parapkg_getbool!(para,0);
+let retobj = parapkg_getint!(para,0);
+let retobj = parapkg_getint64!(para,0);
+let retobj = parapkg_getstring!(para,0);
+let retobj = parapkg_getdouble!(para,0);
+let retobj = parapkg_getobject!(para,0);
+let retobj = parapkg_getparapkg!(para,0);
+let retobj = parapkg_getbinbuf!(para,0);
+let retobj = parapkg_set!(para,0,"2222");
+
+let (retobj,err) = star_runscript!("python","print(123)","","");
+let (retobj,err) = star_runscriptex!("python",binbuf,"","");
+let (retobj,err) = star_dofile!("python",aaa.py","");
+let (retobj,err) = star_dofileex!("python",aaa.py","","");
+
+Example:
+
+let CallBackObj = Service.New(&[]);
+
+star_fn!(CallBackObj,"PrintHello",CleGroup,CleService,CleObject,a:String, b:i32 {
+    println!("########{:?}",a);
+    println!("########{:?}",b);
+    star_ret!(star_parapkg!(CleGroup,"return from go",345.4));
+});
+
+
+```
+
 Build Config:
 --------
 

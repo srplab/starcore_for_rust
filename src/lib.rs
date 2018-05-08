@@ -979,6 +979,7 @@ type VS_BOOL = i8;
 
 include!("vsopenapi_c_stub.rs");
 include!("starrust_native.rs");
+include!("starrust_def.rs");
 
 /*---------------------constant---------------------*/
 pub static MSG_APPEVENT: u32 = 0x00000028;
@@ -5598,96 +5599,6 @@ pub mod starrust {
     pub fn ToDouble(Val:&Any) -> f64{
         return SRPRustToFloat(Val) as f64;
     }  
-
-    //------------------------------------------------------------------------------------------------------------------------
-
-    fn TestRef_Print(refval: usize) {
-        let cpt = SRefToRustObject_StarSrvGroup(refval);
-
-        println!("{}", STARSRVGROUP_IsValid(&cpt));
-        if STARSRVGROUP_IsValid(&cpt) == false {
-            return;
-        }
-    
-        let ssss = STARGETRCMUT_STARSRVGROUP_ToRef(&cpt.as_ref()).borrow();
-        if let Some(ObjData) = ssss.as_ref() {
-            let cpt_any = ObjData as &Any;
-            if cpt_any.is::<StarSrvGroup>() {
-              println!("starsrvgroup");
-            } else {
-                println!("Not a starsrvgroup...");
-            }
-        }
-    }
-
-    fn TestRef_Strong_Create(val: &mut STARSRVGROUP) -> usize {
-        let s_refval = NewRustObjectRefStrong_StarSrvGroup(val, 0);
-        return s_refval;
-    }
-
-    fn TestRef_Strong() -> usize {
-        let mut rr = StarSrvGroup::new();
-        rr.IsValid = true;
-
-        let mut a2 = Rc::new(Some(RefCell::new(Some(rr))));
-        let res = TestRef_Strong_Create(&mut a2);
-
-        println!(
-            "{}",
-            STARSRVGROUP_RefItem(&a2)
-        );
-        return res;
-    }
-
-    pub fn TestRef() {
-        /*-----weak reference test------*/
-        {
-            let mut rr = StarSrvGroup::new();
-            //rr.IsValid = true;
-            let refval = NewRustObjectRef_StarSrvGroup(&STARRC!(Some(rr)), 0);
-
-            TestRef_Print(refval);
-
-            TestRef_Print(refval);
-
-            //rr Drop should be called
-        }
-
-        /*-----strong reference test------*/
-        {
-            let s_refval = TestRef_Strong();
-
-            println!("------------------------");
-            TestRef_Print(s_refval);
-
-            TestRef_Print(s_refval);
-
-            DeleteRustObjectAllRef(s_refval);
-
-            TestRef_Print(s_refval);
-
-            //---strong should be drop
-        }
-
-        //--exist?
-        //DeleteRustObjectAllRef(s_refval);
-
-        let (ii, _) = SRPRustGetInt(&34.54, true);
-
-        let jj = 0;
-    }
-
-    pub fn TestStarService() {
-        let aa = StarService::new();
-        let bb = format!("{}", aa);
-        println!("{}", bb);
-    }
-
-    pub fn TestMatchType<T>(val: &Rc<T>) {
-        match val {
-            ref m => println!("1"),
-        }
-    }
 
 }
 
