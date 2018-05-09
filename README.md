@@ -5,7 +5,23 @@ The library is written in rust language, which supports rust language to call ot
 
 It supports android, windows and linux platforms
 
-Change at 2018/05/18
+Change at 2018/05/09
+--------
+
+Add macro definition, fix bugs
+
+```
+let (retobj,err) = star_runscript!(Service,"python","print(123)","","");
+let (retobj,err) = star_runscriptex!(Service,"python",binbuf,"","");
+let (retobj,err) = star_dofile!(Service,"python",aaa.py","");
+let (retobj,err) = star_dofileex!(Service,"python",aaa.py","","");
+
+let retobj = parapkg_fromvec!(para,Str,&vec!["aaa","bbb"]); // Bool,I8,U8,I16,U16,I32,U32,I64,U64,ISize,USize,F32,F64,String,Str
+let retobj = parapkg_tovec!(para,String);                   // Bool,I32,I64,ISize,F64,String
+```
+
+
+Change at 2018/05/08
 --------
 
 Add macro definition, simplify object function definition and other operations

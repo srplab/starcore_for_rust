@@ -141,6 +141,28 @@ StarParaPkg:    [please refer to trait : STARPARAPKG_TRAIT]
 	FromJSon
 	ToJSon
 
+    FromVecBool
+    FromVecI8
+    FromVecU8
+    FromVecI16
+    FromVecU16
+    FromVecI32
+    FromVecU32
+    FromVecI64
+    FromVecU64
+    FromVecISize
+    FromVecUSize
+    FromVecF32
+    FromVecF64
+    FromVecString
+    FromVecStr
+
+    ToVecBool(
+    ToVecInt
+    ToVecInt64
+    ToVecString
+    ToVecDouble    
+
 StarBinBuf :   [please refer to trait : STARBINBUF_TRAIT]
     GetOffset
 
@@ -7241,8 +7263,9 @@ fn StarParaPkg_ToTuple_Sub(ParaPkg: *const c_void, BasicSRPInterface: *const c_v
 	    		Str = Star_SRPParaPkg_GetStrEx(ParaPkg, Index, &mut StrLen);
 		    	let ttt = SRPRustSetStrEx(Str, StrLen as i32, true);
    				if ttt.len() == 0 && StrLen != 0 { //--changed to byte array
-    				let mut Temp : Vec<u8> = Vec::with_capacity(StrLen as usize);
+    				let mut Temp : Vec<u8> = Vec::with_capacity(StrLen as usize);                    
 	    			if StrLen != 0 {
+                        Temp.resize(StrLen as usize,0);
 		    			vs_memcpy(Temp.as_mut_ptr() as *mut c_void, Str as *const c_void, StrLen as isize);
 			    	}
 				    RetValue.push(Some(Box::new(Temp)));
@@ -7264,6 +7287,7 @@ fn StarParaPkg_ToTuple_Sub(ParaPkg: *const c_void, BasicSRPInterface: *const c_v
 				    } else {
                         let mut Temp : Vec<u8> = Vec::with_capacity(Length as usize);
    						if Length != 0 {
+                            Temp.resize(Length as usize,0);
                             vs_memcpy(Temp.as_mut_ptr() as *mut c_void, Buf as *const c_void, Length as isize);
 	    				}
    						RetValue.push(Some(Box::new(Temp)));
@@ -7271,6 +7295,7 @@ fn StarParaPkg_ToTuple_Sub(ParaPkg: *const c_void, BasicSRPInterface: *const c_v
 			    } else {
    					let mut Temp : Vec<u8> = Vec::with_capacity(Length as usize);
    					if Length != 0 {
+                        Temp.resize(Length as usize,0);
                         vs_memcpy(Temp.as_mut_ptr() as *mut c_void, Buf as *const c_void, Length as isize);
 	    			}
    					RetValue.push(Some(Box::new(Temp)));
@@ -7326,6 +7351,29 @@ pub trait STARPARAPKG_TRAIT {
     fn IsDict(&self) -> bool;
     fn FromJSon(&self,Buf: &Any) -> bool;
     fn ToJSon(&self) -> String;
+
+    fn FromVecBool<'a>(&'a self,val:&Vec<bool>) -> &'a STARPARAPKG;
+    fn FromVecI8<'a>(&'a self,val:&Vec<i8>) -> &'a STARPARAPKG;
+    fn FromVecU8<'a>(&'a self,val:&Vec<u8>) -> &'a STARPARAPKG;
+    fn FromVecI16<'a>(&'a self,val:&Vec<i16>) -> &'a STARPARAPKG;
+    fn FromVecU16<'a>(&'a self,val:&Vec<u16>) -> &'a STARPARAPKG;
+    fn FromVecI32<'a>(&'a self,val:&Vec<i32>) -> &'a STARPARAPKG;
+    fn FromVecU32<'a>(&'a self,val:&Vec<u32>) -> &'a STARPARAPKG;
+    fn FromVecI64<'a>(&'a self,val:&Vec<i64>) -> &'a STARPARAPKG;
+    fn FromVecU64<'a>(&'a self,val:&Vec<u64>) -> &'a STARPARAPKG;
+    fn FromVecISize<'a>(&'a self,val:&Vec<isize>) -> &'a STARPARAPKG;
+    fn FromVecUSize<'a>(&'a self,val:&Vec<usize>) -> &'a STARPARAPKG;
+    fn FromVecF32<'a>(&'a self,val:&Vec<f32>) -> &'a STARPARAPKG;
+    fn FromVecF64<'a>(&'a self,val:&Vec<f64>) -> &'a STARPARAPKG;
+    fn FromVecString<'a>(&'a self,val:&Vec<String>) -> &'a STARPARAPKG;
+    fn FromVecStr<'a>(&'a self,val:&Vec<&'static str>) -> &'a STARPARAPKG;
+
+    fn ToVecBool(&self) -> Vec<bool>;
+    fn ToVecInt(&self) -> Vec<i32>;
+    fn ToVecInt64(&self) -> Vec<i64>;
+    fn ToVecString(&self) -> Vec<String>;
+    fn ToVecDouble(&self) -> Vec<f64>;
+
 }
 
 impl STARPARAPKG_TRAIT for STARPARAPKG {
@@ -7404,6 +7452,7 @@ impl STARPARAPKG_TRAIT for STARPARAPKG {
 				    } else {
    					    let mut Temp : Vec<u8> = Vec::with_capacity(Length as usize);
    					    if Length != 0 {
+                            Temp.resize(Length as usize,0);
                             vs_memcpy(Temp.as_mut_ptr() as *mut c_void, Buf as *const c_void, Length as isize);
 	    			    }                        
     					return Some(Box::new(Temp));
@@ -7419,6 +7468,7 @@ impl STARPARAPKG_TRAIT for STARPARAPKG {
 				    }
 				    let mut Temp : Vec<u8> = Vec::with_capacity(StrLen as usize);
 				    if StrLen != 0 {
+                        Temp.resize(StrLen as usize,0);
                         vs_memcpy(Temp.as_mut_ptr() as *mut c_void, Str as *const c_void, StrLen as isize);
     			    }
     				return Some(Box::new(Temp));
@@ -7814,13 +7864,486 @@ impl STARPARAPKG_TRAIT for STARPARAPKG {
         }    
     }
 
+    fn FromVecBool<'a>(&'a self,val:&Vec<bool>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                Star_SRPParaPkg_InsertBool(ObjData.ParaPkg, i as i32,TOVS_BOOL(val[i]));
+            }
+            return self;
+        }        
+    }
+    fn FromVecI8<'a>(&'a self,val:&Vec<i8>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                Star_SRPParaPkg_InsertInt(ObjData.ParaPkg, i as i32,val[i] as i32);
+            }
+            return self;
+        }        
+    }
+    fn FromVecU8<'a>(&'a self,val:&Vec<u8>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                Star_SRPParaPkg_InsertInt(ObjData.ParaPkg, i as i32,val[i] as i32);
+            }
+            return self;
+        }        
+    }
+    fn FromVecI16<'a>(&'a self,val:&Vec<i16>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+               Star_SRPParaPkg_InsertInt(ObjData.ParaPkg, i as i32,val[i] as i32);
+            }
+            return self;
+        }        
+    }
+    fn FromVecU16<'a>(&'a self,val:&Vec<u16>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                Star_SRPParaPkg_InsertInt(ObjData.ParaPkg, i as i32,val[i] as i32);
+            }
+            return self;
+        }        
+    }
+    fn FromVecI32<'a>(&'a self,val:&Vec<i32>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                Star_SRPParaPkg_InsertInt(ObjData.ParaPkg, i as i32,val[i] as i32);
+            }
+            return self;
+        }        
+    }
+    fn FromVecU32<'a>(&'a self,val:&Vec<u32>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                Star_SRPParaPkg_InsertInt(ObjData.ParaPkg, i as i32,val[i] as i32);
+            }
+            return self;
+        }        
+    }
+    fn FromVecI64<'a>(&'a self,val:&Vec<i64>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                Star_SRPParaPkg_InsertInt64(ObjData.ParaPkg, i as i32,val[i] as i64);
+            }
+            return self;
+        }        
+    }
+    fn FromVecU64<'a>(&'a self,val:&Vec<u64>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                Star_SRPParaPkg_InsertInt64(ObjData.ParaPkg, i as i32,val[i] as i64);
+            }
+            return self;
+        }        
+    }
+    fn FromVecISize<'a>(&'a self,val:&Vec<isize>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                if size_of::<usize>() == 4 {
+                    Star_SRPParaPkg_InsertInt(ObjData.ParaPkg, i as i32,val[i] as i32);                                                       
+                }else{
+                    Star_SRPParaPkg_InsertInt64(ObjData.ParaPkg, i as i32,val[i] as i64);
+                }                   
+            }
+            return self;
+        }        
+    }
+    fn FromVecUSize<'a>(&'a self,val:&Vec<usize>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                if size_of::<usize>() == 4 {
+                    Star_SRPParaPkg_InsertInt(ObjData.ParaPkg, i as i32,val[i] as i32);                                                       
+                }else{
+                    Star_SRPParaPkg_InsertInt64(ObjData.ParaPkg, i as i32,val[i] as i64);
+                }                  
+            }
+            return self;
+        }        
+    }
+    fn FromVecF32<'a>(&'a self,val:&Vec<f32>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                Star_SRPParaPkg_InsertFloat(ObjData.ParaPkg, i as i32,val[i] as f64);
+            }
+            return self;
+        }        
+    }
+    fn FromVecF64<'a>(&'a self,val:&Vec<f64>) -> &'a STARPARAPKG{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                Star_SRPParaPkg_InsertFloat(ObjData.ParaPkg, i as i32,val[i] as f64);
+            }
+            return self;
+        }        
+    }
+
+    fn FromVecString<'a>(&'a self,val:&Vec<String>) -> &'a STARPARAPKG
+    {
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                let (slen,cstr) = SRPRustGetStrEx(&val[i], false);
+                Star_SRPParaPkg_InsertStrEx(ObjData.ParaPkg, i as i32, cstr,slen as u32);
+                STARRUST_SAFERELEASESTR(&val[i], cstr); 
+            }
+            return self;
+        }        
+    } 
+
+    fn FromVecStr<'a>(&'a self,val:&Vec<&'static str>) -> &'a STARPARAPKG
+    {
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return self;
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return self;
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return self;
+	        }         
+        	Star_SRPParaPkg_Clear(ObjData.ParaPkg);
+            for i in 0..val.len() {
+                let (slen,cstr) = SRPRustGetStrEx(&val[i], false);
+                Star_SRPParaPkg_InsertStrEx(ObjData.ParaPkg, i as i32, cstr,slen as u32);
+                STARRUST_SAFERELEASESTR(&val[i], cstr); 
+            }
+            return self;
+        }        
+    }
+
+    fn ToVecBool(&self) -> Vec<bool>{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return Vec::new();
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return Vec::new();
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return Vec::new();
+	        }       
+            let num = Star_SRPParaPkg_GetNumber(ObjData.ParaPkg);
+            if num  == 0 {
+                return Vec::new();
+            }
+
+            let mut res : Vec<bool> = Vec::with_capacity(num as usize);
+            res.resize(num as usize,false);
+            for i in 0..num {
+                res[i as usize] = FROMVS_BOOL(Star_SRPParaPkg_GetBool(ObjData.ParaPkg, i as i32));
+            }
+            return res;
+        }        
+    }
+
+    fn ToVecInt(&self) -> Vec<i32>{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return Vec::new();
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return Vec::new();
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return Vec::new();
+	        }       
+            let num = Star_SRPParaPkg_GetNumber(ObjData.ParaPkg);
+            if num  == 0 {
+                return Vec::new();
+            }
+
+            let mut res : Vec<i32> = Vec::with_capacity(num as usize);
+            res.resize(num as usize,0);
+            for i in 0..num {
+                res[i as usize] = Star_SRPParaPkg_GetInt(ObjData.ParaPkg, i as i32) as i32;
+            }
+            return res;
+        }        
+    }
+    fn ToVecInt64(&self) -> Vec<i64>{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return Vec::new();
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return Vec::new();
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return Vec::new();
+	        }       
+            let num = Star_SRPParaPkg_GetNumber(ObjData.ParaPkg);
+            if num  == 0 {
+                return Vec::new();
+            }
+
+            let mut res : Vec<i64> = Vec::with_capacity(num as usize);
+            res.resize(num as usize,0);
+            for i in 0..num {
+                res[i as usize] = Star_SRPParaPkg_GetInt64(ObjData.ParaPkg, i as i32) as i64;
+            }
+            return res;
+        }        
+    }
+    fn ToVecString(&self) -> Vec<String>{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return Vec::new();
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return Vec::new();
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return Vec::new();
+	        }       
+            let num = Star_SRPParaPkg_GetNumber(ObjData.ParaPkg);
+            if num  == 0 {
+                return Vec::new();
+            }
+
+            let mut res : Vec<String> = Vec::with_capacity(num as usize);
+            res.resize(num as usize,String::default());
+            for i in 0..num {
+   				let Str : *mut c_char;
+    			let mut StrLen : u32 = 0;
+	    		Str = Star_SRPParaPkg_GetStrEx(ObjData.ParaPkg, i as i32, &mut StrLen);
+		    	let ttt = SRPRustSetStrEx(Str, StrLen as i32, true);                
+                res[i as usize] = ttt;
+            }
+            return res;
+        }        
+    }
+    fn ToVecDouble(&self) -> Vec<f64>{
+        unsafe{
+	        if StarRust_SRPControlInterface == 0 as *mut c_void {
+		        return Vec::new();
+	        }
+            let ObjData : StarParaPkgBody;
+            if let Some(fbody) = STARGETRCREF_STARPARAPKG!(self) {    
+                ObjData = fbody.ObjData.clone();
+            }else{
+                return Vec::new();
+            }          
+        	if ObjData.ParaPkg == 0 as *mut c_void {
+		        return Vec::new();
+	        }       
+            let num = Star_SRPParaPkg_GetNumber(ObjData.ParaPkg);
+            if num  == 0 {
+                return Vec::new();
+            }
+
+            let mut res : Vec<f64> = Vec::with_capacity(num as usize);
+            res.resize(num as usize,0.0);
+            for i in 0..num {
+                res[i as usize] = Star_SRPParaPkg_GetFloat(ObjData.ParaPkg, i as i32) as f64;
+            }
+            return res;
+        }        
+    }  
+
 }
 
 /*----------------------------------------------------------------------------*/
 /* StarBinBuf */
 /*----------------------------------------------------------------------------*/
 
-trait STARBINBUF_TRAIT {
+pub trait STARBINBUF_TRAIT {
     fn IsValid(&self) -> bool;
     fn ToString(&self) -> String;   
 
@@ -7978,6 +8501,7 @@ impl STARBINBUF_TRAIT for STARBINBUF {
 	        let mut Length = starrust_ftell(hFile);
 	        starrust_fseek(hFile, 0, 0/*SEEK_SET*/);
             let mut Buf : Vec<u8> = Vec::with_capacity(Length as usize);
+            Buf.resize(Length as usize,0);
         	Length = starrust_fread(Buf.as_mut_ptr() as *mut c_void, 1, Length as usize, hFile) as i32;
 	        starrust_fclose(hFile);
 	        Star_SRPBinBuf_Clear(ObjData.BinBuf);
@@ -8095,7 +8619,7 @@ impl STARBINBUF_TRAIT for STARBINBUF {
 /*----------------------------------------------------------------------------*/
 /* StarSXml */
 /*----------------------------------------------------------------------------*/
-trait STARSXML_TRAIT {
+pub trait STARSXML_TRAIT {
     fn IsValid(&self) -> bool;
     fn ToString(&self) -> String;
 
@@ -9375,6 +9899,9 @@ unsafe{
 		Star_SRPI_LuaPop(SRPInterface, 1);
 	}
     RetValue = Vec::with_capacity(Size as usize);
+    for ii in 0..Size as usize {
+        RetValue.push(Some(Box::new(0)));
+    }
 	Star_SRPI_LuaPushNil(SRPInterface);
 	loop {
 		if Star_SRPI_LuaNext(SRPInterface, Index) == 0 {
@@ -9707,6 +10234,7 @@ unsafe{
 					}
 					let mut Temp : Vec<u8> = Vec::with_capacity(StringSize as usize);
 					if StringSize != 0 {
+                        Temp.resize(StringSize as usize,0);
                         vs_memcpy(Temp.as_mut_ptr() as *mut c_void, StringBuf as *const c_void, StringSize as isize);
 					}
 					return Some(Box::new(Temp));
@@ -9738,6 +10266,7 @@ unsafe{
 					if StringSize == 0 {
 						return Some(Box::new(Temp));
 					} else {
+                        Temp.resize(StringSize as usize,0);
                         vs_memcpy(Temp.as_mut_ptr() as *mut c_void, StringBuf as *const c_void, StringSize as isize);
 						return Some(Box::new(Temp));
 					}
@@ -9797,7 +10326,7 @@ unsafe{
 			    NewObject = Vec::with_capacity(AttributeNumber as usize);
 			    for i in 0..AttributeNumber{
 				    if Star_SRPI_GetAtomicStructAttributeInfoEx(SRPInterface, AtomicStructObject, i as u8, &mut StructAttributeInfo) == VS_TRUE {
-					    NewObject[i as usize] = SRPObject_AttributeToRustObject(selfval, StructAttributeInfo.AttributeIndex, SRPInterface, StructAttributeInfo.Type, StructAttributeInfo.Length, &mut StructAttributeInfo.StructID, StructAttributeInfo.Offset as u32 + BufOffset, Buf, UseStructObject);
+					    NewObject.push(SRPObject_AttributeToRustObject(selfval, StructAttributeInfo.AttributeIndex, SRPInterface, StructAttributeInfo.Type, StructAttributeInfo.Length, &mut StructAttributeInfo.StructID, StructAttributeInfo.Offset as u32 + BufOffset, Buf, UseStructObject));
 				    }
 			    }
 			    return Some(Box::new(NewObject));

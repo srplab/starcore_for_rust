@@ -37,10 +37,13 @@ let retobj = parapkg_getparapkg!(para,0);
 let retobj = parapkg_getbinbuf!(para,0);
 let retobj = parapkg_set!(para,0,"2222");
 
-let (retobj,err) = star_runscript!("python","print(123)","","");
-let (retobj,err) = star_runscriptex!("python",binbuf,"","");
-let (retobj,err) = star_dofile!("python",aaa.py","");
-let (retobj,err) = star_dofileex!("python",aaa.py","","");
+let (retobj,err) = star_runscript!(Service,"python","print(123)","","");
+let (retobj,err) = star_runscriptex!(Service,"python",binbuf,"","");
+let (retobj,err) = star_dofile!(Service,"python",aaa.py","");
+let (retobj,err) = star_dofileex!(Service,"python",aaa.py","","");
+
+let retobj = parapkg_fromvec!(para,Str,&vec!["aaa","bbb"]); // Bool,I8,U8,I16,U16,I32,U32,I64,U64,ISize,USize,F32,F64,String,Str
+let retobj = parapkg_tovec!(para,String);                   // Bool,I32,I64,ISize,F64,String
 
 ------------------------------------------------------------------------*/
 
@@ -470,6 +473,78 @@ macro_rules! parapkg_set {
     ($Obj:ident,$name:expr,$val:expr) => {
         $Obj.Set($name,&$val);
     };    
+}
+
+/// Set ParaPkg's Value
+/// 
+/// # Example
+/// let retobj = parapkg_fromvec!(para,Str,&vec!["aaa","bbb"]);
+/// ```
+#[macro_export]
+macro_rules! parapkg_fromvec {
+    ($Obj:ident,Bool,$val:expr) => {
+        $Obj.FromVecBool($val);
+    }; 
+    ($Obj:ident,I8,$val:expr) => {
+        $Obj.FromVecI8($val);
+    };     
+    ($Obj:ident,U8,$val:expr) => {
+        $Obj.FromVecU8($val);
+    };      
+    ($Obj:ident,I16,$val:expr) => {
+        $Obj.FromVecI16($val);
+    };     
+    ($Obj:ident,U16,$val:expr) => {
+        $Obj.FromVecU16($val);
+    };  
+    ($Obj:ident,I32,$val:expr) => {
+        $Obj.FromVecI32($val);
+    };     
+    ($Obj:ident,U32,$val:expr) => {
+        $Obj.FromVecU32($val);
+    };      
+    ($Obj:ident,ISize,$val:expr) => {
+        $Obj.FromVecISize($val);
+    };     
+    ($Obj:ident,USize,$val:expr) => {
+        $Obj.FromVecUSize($val);
+    };     
+    ($Obj:ident,F32,$val:expr) => {
+        $Obj.FromVecF32($val);
+    }; 
+    ($Obj:ident,F64,$val:expr) => {
+        $Obj.FromVecF64($val);
+    }; 
+    ($Obj:ident,String,$val:expr) => {
+        $Obj.FromVecString($val);
+    }; 
+    ($Obj:ident,Str,$val:expr) => {
+        $Obj.FromVecStr($val);
+    };                         
+}
+
+/// Get ParaPkg's Value
+/// 
+/// # Example
+/// let retobj = parapkg_tovec!(para,String);
+/// ```
+#[macro_export]
+macro_rules! parapkg_tovec {
+    ($Obj:ident,Bool) => {
+        $Obj.ToVecBool();
+    }; 
+    ($Obj:ident,I32) => {
+        $Obj.ToVecI32();
+    };
+    ($Obj:ident,I64) => {
+        $Obj.ToVecI64();
+    };     
+    ($Obj:ident,String) => {
+        $Obj.ToVecString();
+    };    
+    ($Obj:ident,F64) => {
+        $Obj.ToVecDouble();
+    };         
 }
 
 /// RunScript
