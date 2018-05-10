@@ -28,6 +28,8 @@ star_extension!(SrvGroup,Service {
 
 ```
 
+## Post: [Rust Extension for Other Scripts](https://srplab.github.io/rust/2018/05/10/rust_extension_for_other_scripts.html)
+
 
 Change at 2018/05/09
 --------
