@@ -12,8 +12,10 @@ Add macro definition, fix bugs
 
 ```
 star_extension!(SrvGroup,Service { ... } );
+
 Example,
-starlib!(SrvGroup,Service {
+
+star_extension!(SrvGroup,Service {
     /*--create a new cle object, other script can find the object by it's name--*/
 	let obj = Service.New(&[&"RustObject"]);
     /*--define function "PrintHello" of cle object--*/
