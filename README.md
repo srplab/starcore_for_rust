@@ -5,6 +5,28 @@ The library is written in rust language, which supports rust language to call ot
 
 It supports android, windows and linux platforms
 
+Change at 2018/05/10
+--------
+
+Add macro definition, fix bugs
+
+```
+star_extension!(SrvGroup,Service { ... } );
+Example,
+starlib!(SrvGroup,Service {
+    /*--create a new cle object, other script can find the object by it's name--*/
+	let obj = Service.New(&[&"RustObject"]);
+    /*--define function "PrintHello" of cle object--*/
+    star_fn!(obj,"PrintHello",CleGroup,CleService,CleObject,a:String, b:f64 {
+        println!("########{:?}",a);
+        println!("########{:?}",b);
+        star_ret!(star_parapkg!(CleGroup,"return from go",345.4));
+    });     
+});
+
+```
+
+
 Change at 2018/05/09
 --------
 

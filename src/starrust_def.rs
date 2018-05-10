@@ -45,6 +45,8 @@ let (retobj,err) = star_dofileex!(Service,"python",aaa.py","","");
 let retobj = parapkg_fromvec!(para,Str,&vec!["aaa","bbb"]); // Bool,I8,U8,I16,U16,I32,U32,I64,U64,ISize,USize,F32,F64,String,Str
 let retobj = parapkg_tovec!(para,String);                   // Bool,I32,I64,ISize,F64,String
 
+star_extension!(SrvGroup,Service { ... } );
+
 ------------------------------------------------------------------------*/
 
 /// Creates StarParaPkg
@@ -592,5 +594,36 @@ macro_rules! star_dofile {
 macro_rules! star_dofileex {
     ($CleService:ident,$interface:expr,$fname:expr,$path:expr,$mname:expr) => {
         $CleService.DoFileEx(&$interface,&$fname,&$path,&$mname);
+    };    
+}
+
+
+/// create rust extension
+/// 
+/// # Example
+/// star_extension!(SrvGroup,Service { ... } );
+/// ```
+#[macro_export]
+macro_rules! star_extension {
+    ($SrvGroup:ident,$Service:ident $body:block) => {
+#[no_mangle]
+pub extern "C" fn StarCoreService_Init2(StarCore:*const c_void, InterfaceTable:*const c_void ) -> i8
+{
+    let res = starrust::Stub_StarCoreService_Init2(StarCore,InterfaceTable);
+    return res;
+}
+    
+#[no_mangle]
+pub extern "C" fn StarCoreService_Term2(StarCore:*const c_void, InterfaceTable:*const c_void )
+{
+    starrust::Stub_StarCoreService_Term2(StarCore,InterfaceTable);
+}
+
+#[no_mangle]
+pub extern "C" fn ScriptTermCallBack() {}
+#[no_mangle]
+pub extern "C" fn ScriptInitCallBack($SrvGroup: &STARSRVGROUP, $Service: &STARSERVICE) {
+$body
+}
     };    
 }
