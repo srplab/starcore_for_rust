@@ -5,6 +5,12 @@ The library is written in rust language, which supports rust language to call ot
 
 It supports android, windows and linux platforms
 
+Change at 2018/05/11
+--------
+
+## New Post: [Rust Extension for Android](https://srplab.github.io/rust/2018/05/10/rust_extension_for_android.html)
+
+
 Change at 2018/05/10
 --------
 
