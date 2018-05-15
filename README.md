@@ -319,6 +319,249 @@ public class MainActivity extends AppCompatActivity {
 }
 ```
 
+API Interface:
+--------
+
+```
+supported functions: V0.5.0,  test for rust version 1.25
+
+starrust:
+    InitSimple
+    InitSimpleEx
+    InitCore
+    GetSrvGroup
+    ModuleExit
+    ModuleClear
+
+    RegMsgCallBack_P     : fn(ServiceGroupID: u32, uMsg: u32, wParam: &Any, lParam: &Any) -> (bool, Box<Any>)
+    RegDispatchRequest_P : fn()
+    SRPDispatch
+    SRPLock
+    SRPUnLock
+    SetRegisterCode
+    IsRegistered
+    SetLocale
+    GetLocale
+    Version
+    GetScriptIndex
+    SetScript
+    DetachCurrentThread
+    CoreHandle
+
+StarSrvGroup:  [please refer to trait : STARSRVGROUP_TRAIT]
+    CreateService
+    GetService
+    ClearService
+    NewParaPkg   : HashMap<String,&Any>/HashMap<&str,&Any>->dictflag set,bool,...,&str,string,vec<bool>,...vec<&str>,vec<String>. does not support array,slice, and others
+    NewBinBuf
+    NewSXml
+    IsObject
+    IsParaPkg
+    IsBinBuf
+    IsSXml
+    GetServicePath
+    SetServicePath
+    ServicePathIsSet
+    GetCurrentPath
+    ImportService
+    ClearServiceEx
+    RunScript
+    RunScriptEx
+    DoFile
+    DoFileEx
+    SetClientPort
+    SetTelnetPort
+    SetOutputPort
+    SetWebServerPort
+    InitRaw
+    LoadRawModule
+    GetLastError
+    GetLastErrorInfo
+    SUnLockGC
+    GetCorePath
+    GetUserPath
+    GetLocalIP
+    GetLocalIPEx
+    GetObjectNum
+    ActiveScriptInterface
+    PreCompile
+
+StarService:      [please refer to trait : STARSERVICE_TRAIT]
+    Get          : "_Name"  "_ServiceGroup"
+    GetObject
+    GetObjectEx
+    New
+    RunScript
+    RunScriptEx
+    DoFile
+    DoFileEx
+    IsServiceRegistered
+    CheckPassword
+    LoadRawModule
+    NewRawProxy
+    ImportRawContext
+    ImportRawObject
+    GetLastError
+    GetLastErrorInfo
+
+StarParaPkg:    [please refer to trait : STARPARAPKG_TRAIT]
+    GetNumber
+    Get         : int value(index)
+    GetBool
+    GetInt
+    GetInt64    
+    GetString
+    GetDouble
+    GetObject
+    GetParaPkg
+    GetBinBuf
+
+    Clear
+    AppendFrom
+    Set
+    Build
+    Free
+    Dispose
+    ReleaseOwner
+    AsDict
+    IsDict
+    FromJSon
+    ToJSon
+
+    FromVecBool
+    FromVecI8
+    FromVecU8
+    FromVecI16
+    FromVecU16
+    FromVecI32
+    FromVecU32
+    FromVecI64
+    FromVecU64
+    FromVecISize
+    FromVecUSize
+    FromVecF32
+    FromVecF64
+    FromVecString
+    FromVecStr
+
+    ToVecBool(
+    ToVecInt
+    ToVecInt64
+    ToVecString
+    ToVecDouble    
+
+StarBinBuf :   [please refer to trait : STARBINBUF_TRAIT]
+    GetOffset
+
+    Init
+    Clear
+    SaveToFile
+    SaveToFile
+    Free
+    ReleaseOwner
+    Dispose
+
+StarSXml :    [please refer to trait : STARSXML_TRAIT]
+    LoadFromFile
+    LoadFromBuf
+    LoadFromBufEx
+    SaveToFile
+    SaveToBuf
+    GetStandalone
+    GetVersion
+    GetEncoding
+    FindElement
+    FindElementEx
+    FirstElement
+    NextElement
+    ParentElement
+    GetElement
+    GetElementEx
+    GetNs
+    GetNsValue
+    FindAttribute
+    FirstAttribute
+    NextAttribute
+    GetAttributeName
+    GetAttributeValue
+    GetSingleText
+    FirstText
+    NextText
+    GetText
+    SetDeclaration
+    RemoveDeclaration
+
+StarObject :  [please refer to trait : STAROBJECT_TRAIT]
+    Get   : "_Service"  "_Class"  "_ID"  "_Name"
+    GetBool
+    GetInt
+    GetInt64
+    GetString
+    GetDouble
+    GetObject
+    GetParaPkg
+    GetBinBuf
+
+    Set   : "_Name"
+    Call
+    CallBool
+    CallInt
+    CallInt64
+    CallString
+    CallDouble
+    CallObject
+    CallParaPkg
+    CallBinBuf
+
+    New
+    Free
+    Dispose
+    RawToParaPkg
+    DeferFree
+    IsInFree
+    GetSourceScript
+    GetRefEx
+    GetRefInfo
+    IsValid
+    GetLastError
+    GetLastErrorInfo
+    RegScriptProc_P      :  fn(CleGroup:&STARSRVGROUP,CleService:&STARSERVICE,CleObject:&STAROBJECT,Paras: &[STARRESULT]) -> STARRESULT
+    ReleaseOwnerEx
+    IsSLock
+
+note:
+
+1)  As for how to use these functions, please refer to the interface manual and programming guide
+
+2)  Conversion of variable types :
+rust                                ->       other script
+
+bool                                               bool
+i8,u8,i16,u16,i32,u32                              int32
+isize,usize                                        int32 or int64
+f32,f64                                            double
+&str/String                                             string
+HashMap<String,&Any>/HashMap<&str,&Any>            parapkg dict
+vec<bool>,...vec<String>                           parapkg
+
+3)  function can be called from other scripts
+struct methods : the input or output parameter must be types defined above 
+lambda functions
+
+4)  starrust.RegScriptTermCallBack_P is used before rust share library unloaded
+
+5)  starrust.RegScriptInitCallBack_P is used after rust share library loaded
+
+6)  starrust.print/printw/printe/println/printlnw/printlne should be used instead of println!/print!
+
+7)  set_env/get_env can be used to set environment variable
+
+8)  use STARRESULT_TRAIT and STARRESULTTYPE
+
+9)  use ToString/ToBool/ToInt/ToInt64/ToDouble/... of STARRESULT
+
+```
+
 
 More Info:
 --------
