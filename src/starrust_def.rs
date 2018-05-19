@@ -47,6 +47,8 @@ let retobj = parapkg_tovec!(para,String);                   // Bool,I32,I64,ISiz
 
 star_extension!(SrvGroup,Service { ... } );
 
+let para = star_dict!(StarSrvGroup,"aaa"=>2,"bbb"=>3); /* 2018/05/19 */
+
 ------------------------------------------------------------------------*/
 
 /// Creates StarParaPkg
@@ -59,6 +61,25 @@ macro_rules! star_parapkg {
     ($GroupID: expr, $($var: expr),*) => {
         $GroupID.NewParaPkg(&[$(&$var),*]);
     };  
+}
+
+/// Creates star_dict
+/// 
+/// # Example
+/// let para = star_dict!(StarSrvGroup,"aaa"=>2,"bbb"=>3);
+///
+#[macro_export]
+macro_rules! star_dict {
+    {$GroupID: expr,$($name: expr=>$val: expr),*} => {
+        {
+        let parapkg = $GroupID.NewParaDict(&[]);
+        $(
+            parapkg.Set(parapkg.GetNumber(),&$name);
+            parapkg.Set(parapkg.GetNumber(),&$val);
+        )*
+        parapkg
+        }
+    };   
 }
 
 /// Creates StarBinBuf

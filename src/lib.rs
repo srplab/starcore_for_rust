@@ -99,6 +99,8 @@ StarSrvGroup:  [please refer to trait : STARSRVGROUP_TRAIT]
 	ActiveScriptInterface
 	PreCompile
 
+    NewParaDict  /* 2018/05/19 */
+
 StarService:      [please refer to trait : STARSERVICE_TRAIT]
     Get          : "_Name"  "_ServiceGroup"
     GetObject
@@ -5643,6 +5645,7 @@ pub trait STARSRVGROUP_TRAIT {
     fn ClearService(&self);
 
     fn NewParaPkg(&self,args: &[&Any]) -> STARPARAPKG;
+    fn NewParaDict(&self,args: &[&Any]) -> STARPARAPKG;
     fn NewBinBuf(&self) -> STARBINBUF;
     fn NewSXml(&self) -> STARSXML;
     fn IsObject(&self,Arg:&Any) -> bool;
@@ -5817,6 +5820,13 @@ impl STARSRVGROUP_TRAIT for STARSRVGROUP {
            	return ToStarParaPkg(NewParaPkg, Star_SRPBasic_GetServiceGroupID(fbody.BasicSRPInterface), true);
        }    
     }
+
+    fn NewParaDict(&self,args: &[&Any]) -> STARPARAPKG
+    {
+        let Para = self.NewParaPkg(args);
+        Para.AsDict(true);
+        return Para;
+    }    
 
     fn NewBinBuf(&self) -> STARBINBUF {
         unsafe{

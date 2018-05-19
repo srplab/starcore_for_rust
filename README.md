@@ -5,6 +5,22 @@ The library is written in rust language, which supports rust language to call ot
 
 It supports android, windows and linux platforms
 
+Change at 2018/05/10
+--------
+
+Add macro definition, fix bugs
+
+```
+star_dict!(StarSrvGroup,"aaa"=>2,"bbb"=>3);
+```
+
+Add API for StarParaPkg
+
+```
+NewParaDict
+```
+
+
 Change at 2018/05/11
 --------
 
