@@ -5,7 +5,7 @@ The library is written in rust language, which supports rust language to call ot
 
 It supports android, windows and linux platforms
 
-Change at 2018/05/10
+Change at 2018/05/19
 --------
 
 Add macro definition, fix bugs
